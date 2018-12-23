@@ -1,0 +1,12 @@
+<link rel="stylesheet" href="style.css">
+<div class="subject">
+    <h3>{{ data.name }}</h3>
+    {% for group in data.groups %}
+        <div class="container">
+        <div class="element">Clave: {{ group.id }}</div>
+        <div class="element">Horario: {{ group.time }}</div>
+        <div class="element">Curso: {{ group.classroom }}</div>
+        </div>
+    {% endfor %}
+    </div>
+</div>

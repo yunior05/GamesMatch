@@ -3,61 +3,67 @@ import urllib.request as uReq
 import requests
 
 
-def get_data(subject_id):
-    url_cookies = 'http://www.utesa.edu/webutesa/recintos/Santiago/HomeSG.asp?reci=UTSAN'
-    r = requests.get(url_cookies,timeout=5)
-    for cookie in r.cookies:
-        cook = str(cookie)[8:-20]
+class subject:
+    def __init__(self, name, groups):
+        self.name = name
+        self.groups = groups
 
-    url = "http://www.utesa.edu/webutesa/recintos/InfGen/Horarios2.asp?FDesde=%s&Fhasta=%s&x=65&y=5&SelCiclo=12019"
+class group:
+    def __init__(self, id_group = '', time = '', classroom = ''):
+        self.id = id_group
+        self.time = time
+        self.classroom = classroom
+
+def get_cookies(url):
+    r = requests.get(url,timeout=5)
+    for cookie in r.cookies:
+        return str(cookie)[8:-20]
+
+def get_html(url, cookies):
     opener = uReq.build_opener()  
-    opener.addheaders.append(('Cookie', cook))
-    url_e = (url % (subject_id, subject_id + "999"))
-    page = opener.open(url_e)
+    opener.addheaders.append(('Cookie', cookies))
+    page = opener.open(url)
     page_html = page.read()
     page.close()
+    return page_html
+
+def get_data(subject_id):
+    url_cookies = 'http://www.utesa.edu/webutesa/recintos/Santiago/HomeSG.asp?reci=UTSAN'
+    cookies = get_cookies(url_cookies)
+
+    url = "http://www.utesa.edu/webutesa/recintos/InfGen/Horarios2.asp?FDesde=%s&Fhasta=%s&x=65&y=5&SelCiclo=12019"
+    url_e = (url % (subject_id, subject_id + "999"))
+    page_html = get_html(url_e, cookies)
 
     page_soup = bs(page_html, "html.parser")
     table = page_soup.find("td", {"height": "238"})
     rows = table.findAll("tr")
-    subject = {'groups': []}
+    subject_data = subject('', [])
 
     for row in rows:
         data = row.findAll("td", {"valign": "middle"})
         count = 0
-        group = {}
+        group_data = group()
         for info in data:
             if count == 3:
-                subject['name'] = info.text.strip()
+                subject_data.name = info.text.strip()
             if count == 1:
-                group['id'] = info.text.strip()
+                group_data.id = info.text.strip()
             if count == 5:
-                group['time'] = info.text.strip()
+                group_data.time = info.text.strip()
             if count == 6:
-                group['classroom'] = info.text.strip()
+                group_data.classroom = info.text.strip()
             count +=1
-        if group:
-            subject['groups'].append(group)
+        if group_data.id != '':
+            subject_data.groups.append(group_data)
 
-    class materia:
-        def __init__(self, name, groups):
-            self.name = name
-            self.groups = groups
-
-    class grupo:
-        def __init__(self, id_g, time, classroom):
-            self.id = id_g
-            self.time = time
-            self.classroom = classroom
-
-    subject_ob = materia(subject['name'], [])
-
-    for g in subject['groups']:
-        gup = grupo(g['id'], g['time'], g['classroom'])
-        subject_ob.groups.append(gup)
-    
-    return subject_ob
+    return subject_data
 
 if __name__ == "__main__":
-    ##example with id of ALGORITMOS COMPUTACIONALES INF117
-    print(get_data('INF117'))
+    ##example to print data of INF117
+    data = get_data('INF117')
+    print('Subject name: %s' % data.name)
+    print("=============================")
+    for group in get_data('INF117').groups:
+        print('Group id: %s, Group Date: %s and Group Classroom: %s' % (group.id, group.time, group.classroom))
+        print("====================================================================")

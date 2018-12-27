@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup as bs
 import urllib.request as uReq
 import requests
 
+#Constants
+URL_COOKIES = 'http://www.utesa.edu/webutesa/recintos/Santiago/HomeSG.asp?reci=UTSAN'
 
 class subject:
     def __init__(self, name, groups):
@@ -9,10 +11,11 @@ class subject:
         self.groups = groups
 
 class group:
-    def __init__(self, id_group = '', time = '', classroom = ''):
+    def __init__(self, id_group = '', time = '', classroom = '', is_virtual = False):
         self.id = id_group
         self.time = time
         self.classroom = classroom
+        self.is_virtual = is_virtual
 
 def get_cookies(url):
     r = requests.get(url,timeout=5)
@@ -28,9 +31,7 @@ def get_html(url, cookies):
     return page_html
 
 def get_data(subject_id):
-    url_cookies = 'http://www.utesa.edu/webutesa/recintos/Santiago/HomeSG.asp?reci=UTSAN'
-    cookies = get_cookies(url_cookies)
-
+    cookies = get_cookies(URL_COOKIES)
     url = "http://www.utesa.edu/webutesa/recintos/InfGen/Horarios2.asp?FDesde=%s&Fhasta=%s&x=65&y=5&SelCiclo=12019"
     url_e = (url % (subject_id, subject_id + "999"))
     page_html = get_html(url_e, cookies)
@@ -55,15 +56,17 @@ def get_data(subject_id):
                 group_data.classroom = info.text.strip()
             count +=1
         if group_data.id != '':
+            if group_data.classroom == 'VIRTU-':
+                group_data.is_virtual = True
             subject_data.groups.append(group_data)
 
     return subject_data
 
 if __name__ == "__main__":
     ##example to print data of INF117
-    data = get_data('INF117')
+    data = get_data('ADM900')
     print('Subject name: %s' % data.name)
     print("=============================")
-    for group in get_data('INF117').groups:
-        print('Group id: %s, Group Date: %s and Group Classroom: %s' % (group.id, group.time, group.classroom))
+    for group in data.groups:
+        print('Group id: %s | Group Date: %s | Group Classroom: %s | VIRTUAL: %s' % (group.id, group.time, group.classroom, group.is_virtual))
         print("====================================================================")

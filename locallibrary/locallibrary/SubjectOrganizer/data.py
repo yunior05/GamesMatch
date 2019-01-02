@@ -48,35 +48,28 @@ def get_data(subject_id):
 
     for row in rows:
         data = row.findAll("td", {"valign": "middle"})
-        count = 0
         group_data = Group()
-        print(data)
-        for info in data:
-            if count == 3:
-                subject_data.name = info.text.strip()
-            if count == 1:
-                group_data.id = info.text.strip()
-            if count == 5:
-                group_data.time = info.text.strip()
-            if count == 6:
-                group_data.classroom = info.text.strip()
-            count += 1
-        if group_data.id != '':
+        if data:
+            status = data[0].text.strip()
+            subject_data.name = data[3].text.strip()
+            group_data.id = data[1].text.strip()
+            group_data.time = data[5].text.strip()
+            group_data.classroom = data[6].text.strip()
             if group_data.classroom == 'VIRTU-':
                 group_data.is_virtual = True
-            subject_data.groups.append(group_data)
-
+            if not status == 'Cerrado':
+                subject_data.groups.append(group_data)
     return subject_data
 
 
 if __name__ == "__main__":
-    # example to print data of ADM900
-    data = get_data('ADM900')
-    # print('Subject name: %s' % data.name)
-    # print("=============================")
-    # for group in data.groups:
-    #     print(
-    #         'Group id: %s | Group Date: %s | Group Classroom: %s | VIRTUAL: %s' %
-    #         (group.id, group.time, group.classroom, group.is_virtual))
-    #     print("====================================================================")
+    # example to print data of ESP301
+    data = get_data('ESP301')
+    print('Subject name: %s' % data.name)
+    print("=============================")
+    for group in data.groups:
+        print(
+            'Group id: %s | Group Date: %s | Group Classroom: %s | VIRTUAL: %s' %
+            (group.id, group.time, group.classroom, group.is_virtual))
+        print("====================================================================")
     print("FINISH")

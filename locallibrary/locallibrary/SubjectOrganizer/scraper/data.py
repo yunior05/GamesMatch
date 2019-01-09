@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup as bs
 import urllib.request as uReq
 import requests
-import objects
+import Models
 
 # Constants
 URL = "http://www.utesa.edu/webutesa/recintos/InfGen/Horarios2.asp?FDesde=%s&Fhasta=%s&x=65&y=5&SelCiclo=%s"
@@ -27,7 +27,7 @@ def get_data(subject_id, ciclo, url, subject_data = None):
 
     if subject_data == None:
         url = (url % (subject_id, subject_id + "999", ciclo))
-        subject_data = objects.Subject('', [])
+        subject_data = Models.Subject('', [])
 
     page_html = get_html(url, cookies)
     page_soup = bs(page_html, "html.parser")
@@ -36,7 +36,7 @@ def get_data(subject_id, ciclo, url, subject_data = None):
 
     for row in rows:
         data = row.findAll("td", {"valign": "middle"})
-        group_data = objects.Group()
+        group_data = Models.Group()
         
         if data:
             status = data[0].text.strip()
